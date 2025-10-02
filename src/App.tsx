@@ -1,8 +1,10 @@
 import "./App.css";
 import dayjs from "dayjs";
 import { useState, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Ronit from "./Ronit";
 
-function App() {
+function HomePage() {
   const [showUnavailable, setShowUnavailable] = useState(false);
 
   const isUnavailableTime = () => {
@@ -45,13 +47,24 @@ function App() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
+    <div className="flex flex-col items-center justify-center min-h-screen">
       <button
         className="bg-blue-500 hover:bg-blue-600 text-white p-4 rounded-full h-70 w-70 text-4xl font-bold transition-colors"
         onClick={handleButtonClick}>
         לחייג לרונית
       </button>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/ronit" element={<Ronit />} />
+      </Routes>
+    </Router>
   );
 }
 

@@ -14,8 +14,8 @@ function App() {
     if (isUnavailableTime()) {
       setShowUnavailable(true);
     } else {
-      // Make the call
-      window.location.href = "tel:0528842706";
+      // Make WhatsApp call
+      window.location.href = "whatsapp://call?phone=972528842706";
     }
   };
 

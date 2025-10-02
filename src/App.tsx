@@ -14,8 +14,11 @@ function App() {
     if (isUnavailableTime()) {
       setShowUnavailable(true);
     } else {
+      const whatsappUrl = `https://wa.me/0528842706?call=true`;
+
+      // Open in new window/tab
+      window.open(whatsappUrl, "_blank");
       // Make WhatsApp call
-      window.location.href = "whatsapp://call?phone=972528842706";
     }
   };
 

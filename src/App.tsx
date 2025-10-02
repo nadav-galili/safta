@@ -7,7 +7,6 @@ function App() {
 
   const isUnavailableTime = () => {
     const localHour = dayjs().hour();
-    // Unavailable between 13 (1 PM) and 7 (7 AM)
     return localHour >= 22 || localHour < 7;
   };
 

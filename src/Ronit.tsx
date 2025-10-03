@@ -1,13 +1,15 @@
 import "./App.css";
-import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
+import dayjs from "dayjs";
 
 function Ronit() {
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [savedTimes, setSavedTimes] = useState({ start: "", end: "" });
+  const [callLogs, setCallLogs] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
-  // Load saved times from localStorage on component mount
+  // Load saved times and logs from localStorage on component mount
   useEffect(() => {
     const saved = localStorage.getItem("lockTimes");
     if (saved) {
@@ -16,10 +18,20 @@ function Ronit() {
       setStartTime(parsedTimes.start);
       setEndTime(parsedTimes.end);
     }
+
+    const logs = localStorage.getItem("callLogs");
+    if (logs) {
+      setCallLogs(JSON.parse(logs));
+    }
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (startTime >= endTime) {
+      setError("Start lock time must be smaller than end lock time");
+      return;
+    }
+    setError(null);
     const times = { start: startTime, end: endTime };
     setSavedTimes(times);
     // Save to localStorage
@@ -28,24 +40,18 @@ function Ronit() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4">
-      <Link
-        to="/"
-        className="absolute top-4 left-4 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">
-        Back to Home
-      </Link>
-
       <h1 className="text-4xl font-bold text-blue-500 mb-8">
-        Lock Time Settings
+        קביעת זמני נעילה{" "}
       </h1>
 
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+        className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md text-right">
         <div className="mb-4">
           <label
             htmlFor="startTime"
             className="block text-sm font-medium text-gray-700 mb-2">
-            Start Lock Time
+            התחלת שעת נעילה :
           </label>
           <input
             type="time"
@@ -61,7 +67,7 @@ function Ronit() {
           <label
             htmlFor="endTime"
             className="block text-sm font-medium text-gray-700 mb-2">
-            End Lock Time
+            סיום שעת נעילה :
           </label>
           <input
             type="time"
@@ -76,17 +82,38 @@ function Ronit() {
         <button
           type="submit"
           className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition-colors">
-          Save Times
+          שמירה{" "}
         </button>
       </form>
 
+      {error && (
+        <div className="mt-6 p-4 bg-red-100 border border-red-400 rounded-md w-full max-w-md">
+          <p className="text-red-700">{error}</p>
+        </div>
+      )}
+
       {savedTimes.start && savedTimes.end && (
-        <div className="mt-6 p-4 bg-green-100 border border-green-400 rounded-md">
+        <div className="mt-6 p-4 bg-green-100 border border-green-400 rounded-md w-full max-w-md text-right">
           <h3 className="text-lg font-semibold text-green-800 mb-2">
-            Saved Times:
+            :שעות נעילה שנשמרו
           </h3>
-          <p className="text-green-700">Start: {savedTimes.start}</p>
-          <p className="text-green-700">End: {savedTimes.end}</p>
+          <p className="text-green-700">התחלה: {savedTimes.start}</p>
+          <p className="text-green-700">סיום: {savedTimes.end}</p>
+        </div>
+      )}
+
+      {callLogs.length > 0 && (
+        <div className="mt-8 p-4 bg-gray-100 border border-gray-300 rounded-md w-full max-w-md">
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">
+            יומן שיחות{" "}
+          </h3>
+          <ul className="list-disc list-inside">
+            {callLogs.map((log, index) => (
+              <li key={index} className="text-gray-700">
+                {dayjs(log).format("DD/MM/YYYY HH:mm:ss")}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </div>

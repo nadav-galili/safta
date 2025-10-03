@@ -38,6 +38,11 @@ function HomePage() {
   };
 
   const handleButtonClick = () => {
+    const timestamp = dayjs().format("YYYY-MM-DD HH:mm:ss");
+    const existingLogs = JSON.parse(localStorage.getItem("callLogs") || "[]");
+    const updatedLogs = [...existingLogs, timestamp];
+    localStorage.setItem("callLogs", JSON.stringify(updatedLogs));
+
     // Reload lock times from localStorage to get latest values
     const saved = localStorage.getItem("lockTimes");
     if (saved) {
@@ -48,8 +53,10 @@ function HomePage() {
     if (isUnavailableTime()) {
       setShowUnavailable(true);
     } else {
-      // Make the call
-      window.location.href = "tel:0528842706";
+      // Make the call after a short delay to allow localStorage to save
+      setTimeout(() => {
+        window.location.href = "tel:0528842706";
+      }, 100);
     }
   };
 

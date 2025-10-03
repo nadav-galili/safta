@@ -8,6 +8,8 @@ function Ronit() {
   const [savedTimes, setSavedTimes] = useState({ start: "", end: "" });
   const [callLogs, setCallLogs] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const logsPerPage = 10;
 
   // Load saved times and logs from localStorage on component mount
   useEffect(() => {
@@ -21,7 +23,12 @@ function Ronit() {
 
     const logs = localStorage.getItem("callLogs");
     if (logs) {
-      setCallLogs(JSON.parse(logs));
+      const parsedLogs = JSON.parse(logs);
+      // Sort logs to show the latest first
+      parsedLogs.sort(
+        (a: string, b: string) => new Date(b).getTime() - new Date(a).getTime()
+      );
+      setCallLogs(parsedLogs);
     }
   }, []);
 
@@ -37,6 +44,12 @@ function Ronit() {
     // Save to localStorage
     localStorage.setItem("lockTimes", JSON.stringify(times));
   };
+
+  // Pagination logic
+  const indexOfLastLog = currentPage * logsPerPage;
+  const indexOfFirstLog = indexOfLastLog - logsPerPage;
+  const currentLogs = callLogs.slice(indexOfFirstLog, indexOfLastLog);
+  const totalPages = Math.ceil(callLogs.length / logsPerPage);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4">
@@ -108,12 +121,33 @@ function Ronit() {
             יומן שיחות{" "}
           </h3>
           <ul className="list-disc list-inside">
-            {callLogs.map((log, index) => (
+            {currentLogs.map((log, index) => (
               <li key={index} className="text-gray-700">
                 {dayjs(log).format("DD/MM/YYYY HH:mm:ss")}
               </li>
             ))}
           </ul>
+          {totalPages > 1 && (
+            <div className="mt-4 flex justify-center items-center">
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l disabled:opacity-50 disabled:cursor-not-allowed">
+                הקודם
+              </button>
+              <span className="py-2 px-4 text-gray-700">
+                עמוד {currentPage} מתוך {totalPages}
+              </span>
+              <button
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                disabled={currentPage === totalPages}
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-r disabled:opacity-50 disabled:cursor-not-allowed">
+                הבא
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

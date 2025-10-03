@@ -34,10 +34,7 @@ function Ronit() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (startTime >= endTime) {
-      setError("Start lock time must be smaller than end lock time");
-      return;
-    }
+
     setError(null);
     const times = { start: startTime, end: endTime };
     setSavedTimes(times);

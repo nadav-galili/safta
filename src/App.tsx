@@ -1,21 +1,62 @@
 import "./App.css";
 import dayjs from "dayjs";
 import { useState, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Ronit from "./Ronit";
 
-function App() {
+function HomePage() {
   const [showUnavailable, setShowUnavailable] = useState(false);
+  const [lockTimes, setLockTimes] = useState({ start: "22:00", end: "07:00" });
+
+  // Load lock times from localStorage on component mount
+  useEffect(() => {
+    const saved = localStorage.getItem("lockTimes");
+    if (saved) {
+      const parsedTimes = JSON.parse(saved);
+      setLockTimes(parsedTimes);
+    }
+  }, []);
 
   const isUnavailableTime = () => {
-    const localHour = dayjs().hour();
-    return localHour >= 22 || localHour < 7;
+    const currentTime = dayjs();
+    const currentHour = currentTime.hour();
+    const currentMinute = currentTime.minute();
+
+    const [startHour, startMinute] = lockTimes.start.split(":").map(Number);
+    const [endHour, endMinute] = lockTimes.end.split(":").map(Number);
+
+    const startTime = startHour * 60 + startMinute;
+    const endTime = endHour * 60 + endMinute;
+    const currentTimeMinutes = currentHour * 60 + currentMinute;
+
+    // Handle case where end time is next day (e.g., 22:00 to 07:00)
+    if (endTime < startTime) {
+      return currentTimeMinutes >= startTime || currentTimeMinutes < endTime;
+    } else {
+      return currentTimeMinutes >= startTime && currentTimeMinutes < endTime;
+    }
   };
 
   const handleButtonClick = () => {
+    const timestamp = dayjs().format("YYYY-MM-DD HH:mm:ss");
+    const existingLogs = JSON.parse(localStorage.getItem("callLogs") || "[]");
+    const updatedLogs = [...existingLogs, timestamp];
+    localStorage.setItem("callLogs", JSON.stringify(updatedLogs));
+
+    // Reload lock times from localStorage to get latest values
+    const saved = localStorage.getItem("lockTimes");
+    if (saved) {
+      const parsedTimes = JSON.parse(saved);
+      setLockTimes(parsedTimes);
+    }
+
     if (isUnavailableTime()) {
       setShowUnavailable(true);
     } else {
-      // Make the call
-      window.location.href = "tel:0528842706";
+      // Make the call after a short delay to allow localStorage to save
+      setTimeout(() => {
+        window.location.href = "tel:0528842706";
+      }, 100);
     }
   };
 
@@ -45,13 +86,24 @@ function App() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
+    <div className="flex flex-col items-center justify-center min-h-screen">
       <button
         className="bg-blue-500 hover:bg-blue-600 text-white p-4 rounded-full h-70 w-70 text-4xl font-bold transition-colors"
         onClick={handleButtonClick}>
         לחייג לרונית
       </button>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/ronit" element={<Ronit />} />
+      </Routes>
+    </Router>
   );
 }
 

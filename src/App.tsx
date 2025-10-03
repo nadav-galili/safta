@@ -6,13 +6,45 @@ import Ronit from "./Ronit";
 
 function HomePage() {
   const [showUnavailable, setShowUnavailable] = useState(false);
+  const [lockTimes, setLockTimes] = useState({ start: "22:00", end: "07:00" });
+
+  // Load lock times from localStorage on component mount
+  useEffect(() => {
+    const saved = localStorage.getItem("lockTimes");
+    if (saved) {
+      const parsedTimes = JSON.parse(saved);
+      setLockTimes(parsedTimes);
+    }
+  }, []);
 
   const isUnavailableTime = () => {
-    const localHour = dayjs().hour();
-    return localHour >= 22 || localHour < 7;
+    const currentTime = dayjs();
+    const currentHour = currentTime.hour();
+    const currentMinute = currentTime.minute();
+
+    const [startHour, startMinute] = lockTimes.start.split(":").map(Number);
+    const [endHour, endMinute] = lockTimes.end.split(":").map(Number);
+
+    const startTime = startHour * 60 + startMinute;
+    const endTime = endHour * 60 + endMinute;
+    const currentTimeMinutes = currentHour * 60 + currentMinute;
+
+    // Handle case where end time is next day (e.g., 22:00 to 07:00)
+    if (endTime < startTime) {
+      return currentTimeMinutes >= startTime || currentTimeMinutes < endTime;
+    } else {
+      return currentTimeMinutes >= startTime && currentTimeMinutes < endTime;
+    }
   };
 
   const handleButtonClick = () => {
+    // Reload lock times from localStorage to get latest values
+    const saved = localStorage.getItem("lockTimes");
+    if (saved) {
+      const parsedTimes = JSON.parse(saved);
+      setLockTimes(parsedTimes);
+    }
+
     if (isUnavailableTime()) {
       setShowUnavailable(true);
     } else {

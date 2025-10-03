@@ -1,15 +1,29 @@
 import "./App.css";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 function Ronit() {
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [savedTimes, setSavedTimes] = useState({ start: "", end: "" });
 
+  // Load saved times from localStorage on component mount
+  useEffect(() => {
+    const saved = localStorage.getItem("lockTimes");
+    if (saved) {
+      const parsedTimes = JSON.parse(saved);
+      setSavedTimes(parsedTimes);
+      setStartTime(parsedTimes.start);
+      setEndTime(parsedTimes.end);
+    }
+  }, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setSavedTimes({ start: startTime, end: endTime });
+    const times = { start: startTime, end: endTime };
+    setSavedTimes(times);
+    // Save to localStorage
+    localStorage.setItem("lockTimes", JSON.stringify(times));
   };
 
   return (
